@@ -1,0 +1,362 @@
+[
+  {
+    "time": 0.0,
+    "type": "ARRIVED",
+    "customer": 1
+  },
+  {
+    "time": 0.0,
+    "type": "START",
+    "customer": 1,
+    "order": "cone",
+    "scoops": 2,
+    "wait": 0.0,
+    "service": 4,
+    "cashier": 1
+  },
+  {
+    "time": 1.0,
+    "type": "ARRIVED",
+    "customer": 2
+  },
+  {
+    "time": 1.0,
+    "type": "START",
+    "customer": 2,
+    "order": "sundae",
+    "scoops": 1,
+    "wait": 0.0,
+    "service": 5.5,
+    "cashier": 2
+  },
+  {
+    "time": 2.0,
+    "type": "ARRIVED",
+    "customer": 3
+  },
+  {
+    "time": 3.0,
+    "type": "ARRIVED",
+    "customer": 4
+  },
+  {
+    "time": 4.0,
+    "type": "ARRIVED",
+    "customer": 5
+  },
+  {
+    "time": 4.0,
+    "type": "FINISH",
+    "customer": 1,
+    "order": "cone",
+    "scoops": 2,
+    "total": 4.0,
+    "cashier": 1
+  },
+  {
+    "time": 4.0,
+    "type": "START",
+    "customer": 3,
+    "order": "cone",
+    "scoops": 3,
+    "wait": 2.0,
+    "service": 5,
+    "cashier": 1
+  },
+  {
+    "time": 6.0,
+    "type": "ARRIVED",
+    "customer": 6
+  },
+  {
+    "time": 6.5,
+    "type": "FINISH",
+    "customer": 2,
+    "order": "sundae",
+    "scoops": 1,
+    "total": 5.5,
+    "cashier": 2
+  },
+  {
+    "time": 6.5,
+    "type": "START",
+    "customer": 4,
+    "order": "cone",
+    "scoops": 2,
+    "wait": 3.5,
+    "service": 4,
+    "cashier": 2
+  },
+  {
+    "time": 7.0,
+    "type": "ARRIVED",
+    "customer": 7
+  },
+  {
+    "time": 9.0,
+    "type": "ARRIVED",
+    "customer": 8
+  },
+  {
+    "time": 9.0,
+    "type": "FINISH",
+    "customer": 3,
+    "order": "cone",
+    "scoops": 3,
+    "total": 7.0,
+    "cashier": 1
+  },
+  {
+    "time": 9.0,
+    "type": "START",
+    "customer": 5,
+    "order": "sundae",
+    "scoops": 6,
+    "wait": 5.0,
+    "service": 13.0,
+    "cashier": 1
+  },
+  {
+    "time": 10.0,
+    "type": "ARRIVED",
+    "customer": 9
+  },
+  {
+    "time": 10.5,
+    "type": "FINISH",
+    "customer": 4,
+    "order": "cone",
+    "scoops": 2,
+    "total": 7.5,
+    "cashier": 2
+  },
+  {
+    "time": 10.5,
+    "type": "START",
+    "customer": 6,
+    "order": "cone",
+    "scoops": 0,
+    "wait": 4.5,
+    "service": 2,
+    "cashier": 2
+  },
+  {
+    "time": 12.0,
+    "type": "ARRIVED",
+    "customer": 10
+  },
+  {
+    "time": 12.5,
+    "type": "FINISH",
+    "customer": 6,
+    "order": "cone",
+    "scoops": 0,
+    "total": 6.5,
+    "cashier": 2
+  },
+  {
+    "time": 12.5,
+    "type": "START",
+    "customer": 7,
+    "order": "sundae",
+    "scoops": 2,
+    "wait": 5.5,
+    "service": 7.0,
+    "cashier": 2
+  },
+  {
+    "time": 13.0,
+    "type": "ARRIVED",
+    "customer": 11
+  },
+  {
+    "time": 15.0,
+    "type": "ARRIVED",
+    "customer": 12
+  },
+  {
+    "time": 16.0,
+    "type": "ARRIVED",
+    "customer": 13
+  },
+  {
+    "time": 18.0,
+    "type": "ARRIVED",
+    "customer": 14
+  },
+  {
+    "time": 19.0,
+    "type": "ARRIVED",
+    "customer": 15
+  },
+  {
+    "time": 19.5,
+    "type": "FINISH",
+    "customer": 7,
+    "order": "sundae",
+    "scoops": 2,
+    "total": 12.5,
+    "cashier": 2
+  },
+  {
+    "time": 19.5,
+    "type": "START",
+    "customer": 8,
+    "order": "cone",
+    "scoops": 1,
+    "wait": 10.5,
+    "service": 3,
+    "cashier": 2
+  },
+  {
+    "time": 22.0,
+    "type": "FINISH",
+    "customer": 5,
+    "order": "sundae",
+    "scoops": 6,
+    "total": 18.0,
+    "cashier": 1
+  },
+  {
+    "time": 22.0,
+    "type": "START",
+    "customer": 9,
+    "order": "sundae",
+    "scoops": 3,
+    "wait": 12.0,
+    "service": 8.5,
+    "cashier": 1
+  },
+  {
+    "time": 22.5,
+    "type": "FINISH",
+    "customer": 8,
+    "order": "cone",
+    "scoops": 1,
+    "total": 13.5,
+    "cashier": 2
+  },
+  {
+    "time": 22.5,
+    "type": "START",
+    "customer": 10,
+    "order": "sundae",
+    "scoops": 1,
+    "wait": 10.5,
+    "service": 5.5,
+    "cashier": 2
+  },
+  {
+    "time": 28.0,
+    "type": "FINISH",
+    "customer": 10,
+    "order": "sundae",
+    "scoops": 1,
+    "total": 16.0,
+    "cashier": 2
+  },
+  {
+    "time": 28.0,
+    "type": "START",
+    "customer": 11,
+    "order": "cone",
+    "scoops": 2,
+    "wait": 15.0,
+    "service": 4,
+    "cashier": 2
+  },
+  {
+    "time": 30.5,
+    "type": "FINISH",
+    "customer": 9,
+    "order": "sundae",
+    "scoops": 3,
+    "total": 20.5,
+    "cashier": 1
+  },
+  {
+    "time": 30.5,
+    "type": "START",
+    "customer": 12,
+    "order": "sundae",
+    "scoops": 3,
+    "wait": 15.5,
+    "service": 8.5,
+    "cashier": 1
+  },
+  {
+    "time": 32.0,
+    "type": "FINISH",
+    "customer": 11,
+    "order": "cone",
+    "scoops": 2,
+    "total": 19.0,
+    "cashier": 2
+  },
+  {
+    "time": 32.0,
+    "type": "START",
+    "customer": 13,
+    "order": "cone",
+    "scoops": 4,
+    "wait": 16.0,
+    "service": 6,
+    "cashier": 2
+  },
+  {
+    "time": 38.0,
+    "type": "FINISH",
+    "customer": 13,
+    "order": "cone",
+    "scoops": 4,
+    "total": 22.0,
+    "cashier": 2
+  },
+  {
+    "time": 38.0,
+    "type": "START",
+    "customer": 14,
+    "order": "sundae",
+    "scoops": 2,
+    "wait": 20.0,
+    "service": 7.0,
+    "cashier": 2
+  },
+  {
+    "time": 39.0,
+    "type": "FINISH",
+    "customer": 12,
+    "order": "sundae",
+    "scoops": 3,
+    "total": 24.0,
+    "cashier": 1
+  },
+  {
+    "time": 39.0,
+    "type": "START",
+    "customer": 15,
+    "order": "cone",
+    "scoops": 1,
+    "wait": 20.0,
+    "service": 3,
+    "cashier": 1
+  },
+  {
+    "time": 42.0,
+    "type": "FINISH",
+    "customer": 15,
+    "order": "cone",
+    "scoops": 1,
+    "total": 23.0,
+    "cashier": 1
+  },
+  {
+    "time": 45.0,
+    "type": "FINISH",
+    "customer": 14,
+    "order": "sundae",
+    "scoops": 2,
+    "total": 27.0,
+    "cashier": 2
+  }
+]

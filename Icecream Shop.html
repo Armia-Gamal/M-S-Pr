@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Cream Shop Simulation</title>
+    <link rel="icon" type="image/svg+xml" href="ice-cream-svgrepo-com.svg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #FF8BA7; /* Ice cream pink */
+            --secondary: #84E3F3; /* Ice blue */
+            --accent: #FFC069; /* Cone orange */
+            --dark: #2C3E50;
+            --light: #FAFAFA;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        /* --- Header & Nav --- */
+        header {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav button {
+            background: transparent;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #666;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-radius: 20px;
+        }
+
+        nav button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Team Page --- */
+        .team-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .team-header h1 { color: var(--dark); margin-bottom: 0.5rem; }
+        .team-header p { color: #666; }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            border-top: 5px solid var(--secondary);
+        }
+
+        .member-card:hover { transform: translateY(-5px); }
+        .member-icon {
+            width: 80px;
+            height: 80px;
+            background: #f0f4f8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            color: var(--primary);
+        }
+        .member-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .member-id { color: #888; font-size: 0.9rem; font-family: monospace; }
+
+        /* --- Simulation Page --- */
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) { .sim-grid { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            height: 100%;
+        }
+
+        /* Controls */
+        .control-group { margin-bottom: 1.5rem; }
+        .control-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; color: #555; }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #ff7092; }
+        .btn-secondary { background: var(--secondary); color: var(--dark); }
+        .btn-outline { border: 2px solid var(--dark); background: transparent; color: var(--dark); }
+        
+        /* Visualizer */
+        .shop-floor {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+            min-height: 300px;
+            border: 2px dashed #ddd;
+            margin-bottom: 2rem;
+        }
+
+        .servers-area {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 4rem;
+        }
+
+        .server-box {
+            width: 120px;
+            height: 140px;
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .server-box.busy {
+            border-color: var(--primary);
+            background: #fff0f3;
+            box-shadow: 0 0 15px rgba(255, 139, 167, 0.4);
+        }
+
+        .server-icon { font-size: 2rem; margin-bottom: 10px; color: #ccc; }
+        .server-box.busy .server-icon { color: var(--primary); animation: bounce 1s infinite; }
+
+        .queue-line {
+            height: 40px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        .customer-dot {
+            width: 30px;
+            height: 30px;
+            background: var(--dark);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            flex-shrink: 0;
+        }
+        
+        .customer-dot.cone { background: var(--accent); }
+        .customer-dot.sundae { background: var(--primary); }
+
+        /* Stats & Logs */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .stat-val { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: #777; }
+
+        .console-log {
+            background: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+            padding: 1rem;
+            border-radius: 8px;
+            height: 250px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        /* Table */
+        .data-table-wrapper {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; color: #444; }
+        tr:hover { background: #fcfcfc; }
+        
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .badge-cone { background: #fff7e6; color: #d46b08; }
+        .badge-sundae { background: #fff0f6; color: #c41d7f; }
+
+        /* Loading Overlay */
+        #loading {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: white; z-index: 2000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.5s;
+        }
+
+        /* --- Virtual Simulation Styles --- */
+        #virtual-page {
+            position: relative;
+            min-height: 800px;
+        }
+        
+        #virtual-page #clock {
+            position: absolute;
+            top: 10px;
+            right: -300px;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 2000;
+        }
+
+        #virtual-page .shop {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-bottom: 20px;
+        }
+
+        #virtual-page .cashier {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 240px;
+            height: 160px;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            padding-top: 10px;
+        }
+
+        #virtual-page .status {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        #virtual-page .queue-box {
+            position: absolute;
+            top: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 900px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px dashed #ccc;
+            border-radius: 15px;
+            text-align: center;
+            padding-top: 10px;
+            color: #555;
+            font-weight: bold;
+            z-index: 0;
+        }
+
+        #virtual-page .exit-box {
+            position: absolute;
+            top: 530px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1300px;
+            height: 140px;
+            background: rgba(230, 255, 230, 0.4);
+            border: 2px dashed #aaddaa;
+            border-radius: 15px;
+            text-align: center;
+            padding-top: 10px;
+            color: #555;
+            font-weight: bold;
+            z-index: 0;
+        }
+
+        #virtual-page .person {
+            position: absolute;
+            width: 70px;
+            text-align: center;
+            font-size: 12px;
+            transition: left 0.6s linear, top 0.6s linear;
+            z-index: 100;
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));
+        }
+
+        #virtual-page .person.waiting svg { stroke: black; }
+        #virtual-page .person.serving svg { stroke: red; }
+        #virtual-page .person.done svg { stroke: green; }
+        #virtual-page .person.serving { z-index: 1000; }
+
+        #virtual-page .info {
+            background: rgba(255,255,255,0.9);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 10px;
+            border: 1px solid #eee;
+            margin-top: 2px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading">
+    <i class="fas fa-ice-cream fa-3x fa-spin" style="color:var(--primary)"></i>
+    <h2 style="margin-top: 20px;">Initializing Simulation...</h2>
+</div>
+
+<header>
+    <div class="logo">
+        <i class="fas fa-ice-cream"></i>
+        <span>Scoops Sim</span>
+    </div>
+    <nav>
+        <button onclick="switchTab('team')" id="nav-team" class="active">Team</button>
+        <button onclick="switchTab('sim')" id="nav-sim">Simulation</button>
+        <button onclick="switchTab('virtual')" id="nav-virtual">Virtual Simulation</button>
+    </nav>
+</header>
+
+<div class="container">
+
+    <div id="team-page" class="page active">
+        <div class="team-header">
+            <h1>Modeling & Simulation Project</h1>
+            <p>Department: CS & Statistics | Supervision: Dr. Hesham - Dr. Alaa</p>
+        </div>
+        <div class="team-grid">
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-astronaut"></i></div>
+                <div class="member-name">Armia Gamal</div>
+                <div class="member-id">ID: 352250706</div>
+            </div>
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-circle"></i></div>
+                <div class="member-name">Sara Essam</div>
+                <div class="member-id">ID: 352250785</div>
+            </div>
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-graduate"></i></div>
+                <div class="member-name">Shada Ayman</div>
+                <div class="member-id">ID: 352250738</div>
+            </div>
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-check"></i></div>
+                <div class="member-name">Salsabel Esmail</div>
+                <div class="member-id">ID: 352250787</div>
+            </div>
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-tie"></i></div>
+                <div class="member-name">Sherif Karam</div>
+                <div class="member-id">ID: 352250808</div>
+            </div>
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-cog"></i></div>
+                <div class="member-name">Ziad Walid Mokhtar</div>
+                <div class="member-id">ID: 352250783</div>
+            </div>
+            <div class="member-card">
+                <div class="member-icon"><i class="fas fa-user-edit"></i></div>
+                <div class="member-name">Peter Bolbol</div>
+                <div class="member-id">ID: 352250738</div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 3rem;">
+            <button class="btn btn-primary" onclick="switchTab('sim')" style="max-width: 200px; margin: 0 auto;">
+                Go to Simulation <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="virtual-page" class="page">
+        <div id="clock">Time: 0.0</div>
+
+        <img id="entrance-door" src="door-house-svgrepo-com.svg" style="position: absolute; bottom: 20px; right: -300px; width: 120px; z-index: 50;">
+
+        <h1 align="center" style="color: #333; margin-top: 20px;">🍦 Ice Cream Shop Simulation</h1>
+
+        <div class="shop">
+            <div class="cashier" id="cashier1">
+                <img src="cashier-svgrepo-com.svg" style="height: 80px; display: block; margin: 0 auto;">
+                Cashier 1
+                <div class="status" id="status1" style="color:green;">Free</div>
+            </div>
+            <div class="cashier" id="cashier2">
+                <img src="cashier-svgrepo-com.svg" style="height: 80px; display: block; margin: 0 auto;">
+                Cashier 2
+                <div class="status" id="status2" style="color:green;">Free</div>
+            </div>
+        </div>
+
+        <div class="queue-box">Queue (Count: <span id="q-count">0</span>)</div>
+        <div class="exit-box">Exit</div>
+    </div>
+
+    <div id="sim-page" class="page">
+        <div class="sim-grid">
+            
+            <div class="panel">
+                <h3><i class="fas fa-sliders-h"></i> Controls</h3>
+                <hr style="margin: 10px 0; border-color: #eee;">
+                
+                <div class="control-group">
+                    <label>Simulation Speed</label>
+                    <input type="range" id="simSpeed" min="100" max="2000" value="1000" style="width: 100%;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#888;">
+                        <span>Slow</span>
+                        <span>Fast</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Actions</label>
+                    <button class="btn btn-primary" id="btnStart" onclick="startSimulation()">
+                        <i class="fas fa-play"></i> Run Simulation
+                    </button>
+                </div>
+
+                <div class="control-group">
+                    <label>Results</label>
+                    <button class="btn btn-outline" onclick="downloadCSV()">
+                        <i class="fas fa-file-excel"></i> Download Excel/CSV
+                    </button>
+                </div>
+
+                <div style="margin-top: 20px; font-size: 0.85rem; color: #666; background: #f0f0f0; padding: 10px; border-radius: 8px;">
+                    <strong>Logic Applied:</strong><br>
+                    • Cone: 2 + scoops * 1 min<br>
+                    • Sundae: 4 + scoops * 1.5 min<br>
+                    • Data Cleaning: Avg dist check
+                </div>
+            </div>
+
+            <div>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <div class="stat-val" id="stat-time">0.0</div>
+                        <div class="stat-label">Sim Time (min)</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="stat-queue">0</div>
+                        <div class="stat-label">In Queue</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="stat-busy">0/2</div>
+                        <div class="stat-label">Servers Busy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="stat-served">0</div>
+                        <div class="stat-label">Served</div>
+                    </div>
+                </div>
+
+                <div class="shop-floor">
+                    <div style="text-align: center; color: #888; font-weight: 600; margin-bottom: 20px;">SERVING AREA</div>
+                    
+                    <div class="servers-area">
+                        <div class="server-box" id="server-0">
+                            <i class="fas fa-user server-icon"></i>
+                            <strong>Server 1</strong>
+                            <span id="server-0-status" style="font-size: 0.8rem; color: #888;">Idle</span>
+                        </div>
+                        <div class="server-box" id="server-1">
+                            <i class="fas fa-user server-icon"></i>
+                            <strong>Server 2</strong>
+                            <span id="server-1-status" style="font-size: 0.8rem; color: #888;">Idle</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 5px; font-size: 0.9rem; font-weight: 600; color: #666;">Waiting Queue:</div>
+                    <div class="queue-line" id="visual-queue">
+                        <span style="color:#aaa; font-style:italic; font-size:0.8rem;">Empty</span>
+                    </div>
+                </div>
+
+                <div class="console-log" id="console">
+                    <div>System Ready... Load data to begin.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="margin-top: 2rem;">
+            <h3>Data Preview</h3>
+            <div class="data-table-wrapper">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Arrival</th>
+                            <th>Raw Order</th>
+                            <th>Scoops</th>
+                            <th>Fixed Order</th>
+                            <th>Service Time</th>
+                            <th>Finish Time</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Data Management ---
+    let rawData = [];
+    let simulationEvents = []; // The pre-calculated timeline
+    let isRunning = false;
+    let timeScale = 1000; // ms per simulated unit
+    
+    // --- Core Logic (Python Translation) ---
+    
+    function processData() {
+        // 1. Calculate Averages (Pandas logic)
+        const cones = rawData.filter(d => d.order === 'cone');
+        const sundaes = rawData.filter(d => d.order === 'sundae');
+        
+        const avgCone = cones.reduce((sum, c) => sum + c.scoops, 0) / (cones.length || 1);
+        const avgSundae = sundaes.reduce((sum, s) => sum + s.scoops, 0) / (sundaes.length || 1);
+
+        // 2. Fix Orders and Calculate Service Time
+        rawData.forEach(row => {
+            let fixed = row.order;
+            
+            // fix_order function logic
+            if (row.order !== 'cone' && row.order !== 'sundae') {
+                if (Math.abs(row.scoops - avgCone) <= Math.abs(row.scoops - avgSundae)) {
+                    fixed = 'cone';
+                } else {
+                    fixed = 'sundae';
+                }
+            }
+            row.fixed_order = fixed;
+
+            // Service Time Logic
+            if (fixed === 'cone') {
+                row.service_duration = 2 + (row.scoops * 1);
+            } else {
+                row.service_duration = 4 + (row.scoops * 1.5);
+            }
+        });
+
+        // 3. SimPy Simulation Logic (Pre-calculation)
+        // We simulate the flow mathematically first to generate a timeline
+        let servers = [0, 0]; // When each server becomes free
+        
+        // Sort by arrival
+        rawData.sort((a,b) => a.arrival_time - b.arrival_time);
+
+        rawData.forEach(cust => {
+            // Find earliest available server
+            let serverIdx = 0;
+            if (servers[1] < servers[0]) serverIdx = 1;
+
+            // Start time is max of arrival or when server is free
+            const startTime = Math.max(cust.arrival_time, servers[serverIdx]);
+            const finishTime = startTime + cust.service_duration;
+
+            // Update customer and server
+            cust.start_time = startTime;
+            cust.finish_time = finishTime;
+            cust.server_idx = serverIdx;
+            
+            // Occupy server
+            servers[serverIdx] = finishTime;
+        });
+
+        renderTable();
+    }
+
+    // --- Visualization Engine ---
+
+    function startSimulation() {
+        if (isRunning) return;
+        isRunning = true;
+        document.getElementById('btnStart').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+        document.getElementById('console').innerHTML = ''; // Clear logs
+        document.querySelector('#dataTable tbody').innerHTML = ''; // Clear table for run
+        
+        // Build Timeline Events
+        // We need: Arrival, StartService, EndService events for every customer
+        let events = [];
+        rawData.forEach(c => {
+            events.push({ type: 'ARRIVE', time: c.arrival_time, cust: c });
+            events.push({ type: 'START', time: c.start_time, cust: c });
+            events.push({ type: 'FINISH', time: c.finish_time, cust: c });
+        });
+
+        // Sort events chronologically
+        events.sort((a,b) => a.time - b.time);
+
+        let eventIndex = 0;
+        const totalEvents = events.length;
+        
+        // Queue state
+        let queue = [];
+        let servedCount = 0;
+        let busyServers = 0;
+
+        function playStep() {
+            if (eventIndex >= totalEvents) {
+                log("Simulation Complete.", "white");
+                isRunning = false;
+                document.getElementById('btnStart').innerHTML = '<i class="fas fa-play"></i> Run Again';
+                return;
+            }
+
+            const evt = events[eventIndex];
+            const currentSimTime = evt.time;
+            
+            // Update Time Display
+            document.getElementById('stat-time').innerText = currentSimTime.toFixed(1);
+
+            // Process Event
+            if (evt.type === 'ARRIVE') {
+                log(`Time ${evt.time.toFixed(1)}: Customer ${evt.cust.customer_id} ARRIVED (${evt.cust.fixed_order}, ${evt.cust.scoops} scoops)`);
+                queue.push(evt.cust);
+                updateQueueVisual(queue);
+            } 
+            else if (evt.type === 'START') {
+                // Remove from queue
+                queue = queue.filter(c => c.customer_id !== evt.cust.customer_id);
+                updateQueueVisual(queue);
+
+                // Occupy Server
+                busyServers++;
+                updateServerVisual(evt.cust.server_idx, true, evt.cust);
+                
+                log(`Time ${evt.time.toFixed(1)}: Customer ${evt.cust.customer_id} START service (Server ${evt.cust.server_idx + 1})`);
+                log(`-- Order: ${evt.cust.fixed_order}, Duration: ${evt.cust.service_duration.toFixed(1)}`, "#aaa");
+            } 
+            else if (evt.type === 'FINISH') {
+                busyServers--;
+                servedCount++;
+                updateServerVisual(evt.cust.server_idx, false, null);
+                log(`Time ${evt.time.toFixed(1)}: Customer ${evt.cust.customer_id} FINISHED`, "#00ff00");
+                log(`------------------------------------------------------------`, "#444");
+                addTableRow(evt.cust);
+            }
+
+            // Update Stats
+            document.getElementById('stat-queue').innerText = queue.length;
+            document.getElementById('stat-busy').innerText = `${busyServers}/2`;
+            document.getElementById('stat-served').innerText = servedCount;
+
+            // Schedule next step
+            eventIndex++;
+            if (eventIndex < totalEvents) {
+                const nextTime = events[eventIndex].time;
+                const timeDiff = nextTime - currentSimTime;
+                // Wait proportional to difference, or minimum small delay
+                const delay = Math.max(timeDiff * (2000 - document.getElementById('simSpeed').value), 50); 
+                setTimeout(playStep, delay);
+            } else {
+                playStep(); // Finalize
+            }
+        }
+
+        playStep();
+    }
+
+    // --- DOM Updaters ---
+
+    function log(msg, color="#0f0") {
+        const consoleDiv = document.getElementById('console');
+        const line = document.createElement('div');
+        line.style.color = color;
+        line.innerText = msg;
+        consoleDiv.appendChild(line);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    function updateQueueVisual(queueData) {
+        const container = document.getElementById('visual-queue');
+        if (queueData.length === 0) {
+            container.innerHTML = '<span style="color:#aaa; font-style:italic; font-size:0.8rem;">Empty</span>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        queueData.forEach(c => {
+            const dot = document.createElement('div');
+            dot.className = `customer-dot ${c.fixed_order}`;
+            dot.innerText = c.customer_id;
+            dot.title = `${c.fixed_order}, ${c.scoops} scoops`;
+            container.appendChild(dot);
+        });
+    }
+
+    function updateServerVisual(idx, isBusy, cust) {
+        const box = document.getElementById(`server-${idx}`);
+        const statusText = document.getElementById(`server-${idx}-status`);
+        
+        if (isBusy) {
+            box.classList.add('busy');
+            statusText.innerHTML = `Serving <strong>#${cust.customer_id}</strong><br><small>${cust.fixed_order}</small>`;
+        } else {
+            box.classList.remove('busy');
+            statusText.innerText = "Idle";
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.querySelector('#dataTable tbody');
+        tbody.innerHTML = '';
+        rawData.forEach(row => addTableRow(row));
+    }
+
+    function addTableRow(row) {
+        const tbody = document.querySelector('#dataTable tbody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${row.customer_id}</td>
+            <td>${row.arrival_time.toFixed(1)}</td>
+            <td>${row.order}</td>
+            <td>${row.scoops}</td>
+            <td><span class="badge badge-${row.fixed_order}">${row.fixed_order}</span></td>
+            <td>${row.service_duration ? row.service_duration.toFixed(1) : '-'}</td>
+            <td>${row.finish_time ? row.finish_time.toFixed(1) : '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    // --- Utilities ---
+
+    function switchTab(tab) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById(`${tab}-page`).classList.add('active');
+        document.getElementById(`nav-${tab}`).classList.add('active');
+
+        if (tab === 'virtual') {
+            if (!virtualSimInitialized) initVirtualSim();
+            document.body.style.background = "#f0f2f5";
+            document.body.style.zoom = "80%";
+            document.body.style.overflowY = "hidden";
+        } else {
+            document.body.style.background = "linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)";
+            document.body.style.zoom = "100%";
+            document.body.style.overflowY = "auto";
+        }
+    }
+
+    // Removed regenerateData as requested
+
+    function downloadCSV() {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Customer ID,Arrival Time,Order Type,Scoops,Fixed Order,Finish Time\n";
+        
+        rawData.forEach(row => {
+            let rowStr = `${row.customer_id},${row.arrival_time},${row.order},${row.scoops},${row.fixed_order},${row.finish_time}`;
+            csvContent += rowStr + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "icecream_sim_results.csv");
+        document.body.appendChild(link);
+        link.click();
+    }
+
+    // --- Init ---
+    window.onload = function() {
+        setTimeout(() => {
+            document.getElementById('loading').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 500);
+            
+            // Initial data load
+            loadDefaultData();
+        }, 1000);
+    }
+
+    function loadDefaultData() {
+        log("Fetching icecream_data.xlsx...");
+        fetch('icecream_data.xlsx')
+            .then(res => {
+                if(!res.ok) throw new Error("File not found or server error");
+                return res.arrayBuffer();
+            })
+            .then(buffer => {
+                const workbook = XLSX.read(buffer, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+                
+                rawData = json.map((row, index) => ({
+                    customer_id: row['customer_id'] || row['ID'] || row['id'] || (index + 1),
+                    arrival_time: parseFloat(row['arrival_time'] || row['Arrival'] || row['arrival'] || row['Time'] || 0),
+                    order: String(row['Order'] || row['order'] || '').toLowerCase(),
+                    scoops: parseInt(row['scoops'] != null ? row['scoops'] : (row['Scoops'] != null ? row['Scoops'] : 1)),
+                    fixed_order: null,
+                    service_duration: null,
+                    start_time: null,
+                    finish_time: null,
+                    server_idx: null
+                }));
+
+                processData();
+                log(`Loaded ${rawData.length} rows from icecream_data.xlsx`);
+                document.getElementById('console').innerHTML = `Data loaded from icecream_data.xlsx. Ready to run.`;
+            })
+            .catch(err => {
+                log("Error: " + err.message, "red");
+                log("Ensure icecream_data.xlsx is in the same folder and served via HTTP.", "orange");
+            });
+    }
+
+    // --- Virtual Simulation Logic ---
+    let virtualSimInitialized = false;
+    let vSimTime = 0;
+    let vTargetTime = 0;
+    let vClockTimer = null;
+    let vQueueSlots = [];
+    let vExitSlots = [];
+    const vZoomLevel = 0.8;
+
+    function initVirtualSim() {
+        virtualSimInitialized = true;
+        fetch("backend/events.json")
+            .then(res => res.json())
+            .then(events => startVirtualSimulation(events))
+            .catch(err => console.log("Virtual Sim: events.json not found or fetch failed."));
+    }
+
+    function createPerson(id) {
+        const p = document.createElement("div");
+        p.className = "person waiting";
+        p.id = "cust" + id;
+
+        p.innerHTML = `
+            <b>ID ${id}</b>
+            <svg width="40" height="80">
+                <circle cx="20" cy="10" r="8"/>
+                <line x1="20" y1="18" x2="20" y2="45" stroke-width="3"/>
+                <line x1="20" y1="25" x2="5" y2="40" stroke-width="3"/>
+                <line x1="20" y1="25" x2="35" y2="40" stroke-width="3"/>
+                <line x1="20" y1="45" x2="8" y2="70" stroke-width="3"/>
+                <line x1="20" y1="45" x2="32" y2="70" stroke-width="3"/>
+            </svg>
+            <div class="info"></div>
+        `;
+
+        const container = document.getElementById('virtual-page');
+        const door = document.getElementById("entrance-door");
+        const rect = door.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        // Calculate position relative to container
+        const leftPos = (rect.left - containerRect.left) / vZoomLevel + (rect.width / vZoomLevel) / 2 - 35;
+        const topPos = (rect.top - containerRect.top) / vZoomLevel + (rect.height / vZoomLevel) / 2;
+        
+        p.style.left = leftPos + "px";
+        p.style.top = topPos + "px";
+        container.appendChild(p);
+    }
+
+    function startVirtualSimulation(events) {
+        if (vClockTimer) clearInterval(vClockTimer);
+        vSimTime = 0;
+        let maxTime = 0;
+        events.forEach(e => { if(e.time > maxTime) maxTime = e.time; });
+
+        vClockTimer = setInterval(() => {
+            vSimTime += 0.1;
+            const clockEl = document.querySelector("#virtual-page #clock");
+            if(clockEl) clockEl.innerText = "Time: " + vSimTime.toFixed(1);
+            if(vSimTime > maxTime + 5) clearInterval(vClockTimer);
+        }, 100);
+
+        events.forEach(ev => {
+            setTimeout(() => handleVirtualEvent(ev), ev.time * 1000);
+        });
+    }
+
+    function handleVirtualEvent(ev) {
+        if (ev.type === "ARRIVED") {
+            createPerson(ev.customer);
+            const newP = document.getElementById("cust" + ev.customer);
+            if (newP) void newP.offsetWidth;
+        }
+
+        const p = document.getElementById("cust" + ev.customer);
+        if (!p) return;
+
+        const info = p.querySelector(".info");
+
+        if (ev.type === "ARRIVED") {
+            p.className = "person waiting";
+            vQueueSlots.push(ev.customer);
+            updateVQueue();
+            info.innerText = "Arrived";
+        }
+
+        if (ev.type === "START") {
+            p.className = "person serving";
+            vQueueSlots = vQueueSlots.filter(id => id !== ev.customer);
+            updateVQueue();
+            setVCashierStatus(ev.cashier, true);
+
+            const cashierEl = document.getElementById("cashier" + ev.cashier);
+            if (cashierEl) {
+                const containerRect = document.getElementById('virtual-page').getBoundingClientRect();
+                const rect = cashierEl.getBoundingClientRect();
+                p.style.left = ((rect.left - containerRect.left) / vZoomLevel + (rect.width / vZoomLevel) / 2 - 35) + "px";
+                p.style.top = ((rect.top - containerRect.top) / vZoomLevel + (rect.height / vZoomLevel)) + "px";
+            }
+            info.innerText = `"I want a ${ev.order}\nwith ${ev.scoops} scoops"`;
+        }
+
+        if (ev.type === "FINISH") {
+            p.className = "person done";
+            setVCashierStatus(ev.cashier, false);
+            vExitSlots.push(ev.customer);
+            
+            const exitBox = document.querySelector('.exit-box');
+            const containerRect = document.getElementById('virtual-page').getBoundingClientRect();
+            const rect = exitBox.getBoundingClientRect();
+            const startX = (rect.left - containerRect.left) / vZoomLevel + 50;
+            const startY = (rect.top - containerRect.top) / vZoomLevel + 60;
+            const gap = 85;
+            const i = vExitSlots.length - 1;
+
+            p.style.left = (startX + i * gap) + "px";
+            p.style.top = startY + "px";
+            info.innerText = `Finished at ${ev.time}s\nTotal: ${ev.total}s`;
+        }
+    }
+
+    function updateVQueue() {
+        document.getElementById("q-count").innerText = vQueueSlots.length;
+        const queueBox = document.querySelector('.queue-box');
+        const containerRect = document.getElementById('virtual-page').getBoundingClientRect();
+        const rect = queueBox.getBoundingClientRect();
+        const startX = (rect.left - containerRect.left) / vZoomLevel + 50;
+        const startY = (rect.top - containerRect.top) / vZoomLevel + 60;
+        const gap = 85;
+
+        vQueueSlots.forEach((id, i) => {
+            const p = document.getElementById("cust" + id);
+            if (!p) return;
+            p.style.left = (startX + i * gap) + "px";
+            p.style.top = startY + "px";
+        });
+    }
+
+    function setVCashierStatus(id, busy) {
+        const el = document.getElementById("status" + id);
+        if (!el) return;
+        el.innerText = busy ? "Busy" : "Free";
+        el.style.color = busy ? "red" : "green";
+    }
+</script>
+</body>
+</html>
